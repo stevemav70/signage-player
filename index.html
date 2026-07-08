@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>Randomized YouTube Playlist</title>
   
+  <!-- Add this Referrer Policy meta tag to help bypass local playback restrictions -->
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <title>In-Order YouTube Playlist</title>
   <style>
+    /* Resets the page so the video takes up the entire screen with no scrolling or borders */
     html, body {
       margin: 0;
       padding: 0;
@@ -15,6 +18,8 @@
       overflow: hidden;
       background-color: #000000;
     }
+    
+    /* Makes the iframe stretch to the edges. pointer-events prevents accidental touch interactions */
     iframe {
       width: 100vw;
       height: 100vh;
@@ -25,6 +30,7 @@
 </head>
 <body>
   
+  <!-- The YouTube player will replace this div -->
   <div id="player"></div>
 
   <script>
@@ -34,26 +40,28 @@
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     var player;
-    var playlistId = 'PLa8eywZH4vzY';
+    
+    // NEW PLAYLIST ID UPDATED HERE
+    var playlistId = 'PLcduKFXaXaes'; 
 
     function onYouTubeIframeAPIReady() {
       player = new YT.Player('player', {
         height: '100%',
         width: '100%',
         playerVars: {
-          'autoplay': 1,
-          'controls': 0,
-          'disablekb': 1,
-          'fs': 0,
-          'rel': 0,
-          'modestbranding': 1,
+          'autoplay': 1,       // Auto-play the video on load
+          'controls': 0,       // Hide player controls for a clean signage look
+          'disablekb': 1,      // Disable keyboard controls
+          'fs': 0,             // Remove fullscreen button
+          'rel': 0,            // Don't show related videos from other channels
+          'modestbranding': 1, // Remove YouTube logo where possible
           
-          // CRITICAL FIX: Autoplaying muted video is rarely flagged as bot activity
+          // CRITICAL FIX: Autoplaying muted video bypasses the YouTube bot/captcha check
           'mute': 1,           
           
           'listType': 'playlist',
           'list': playlistId,
-          'origin': window.location.origin 
+          'origin': window.location.origin // Fixes Error 153 for local/embedded playback
         },
         events: {
           'onReady': onPlayerReady,
@@ -72,16 +80,18 @@
     var isInitialized = false;
 
     function onPlayerStateChange(event) {
+      // When the playlist cues up, ensure it is set to loop, but DO NOT shuffle
       if ((event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.PLAYING) && !isInitialized) {
-        player.setShuffle(true);
-        player.setLoop(true);
+        player.setLoop(true); // Loop the playlist endlessly
+        
         if (event.data === YT.PlayerState.CUED) {
            player.playVideo();
         }
         isInitialized = true;
       }
       
-      // CRITICAL FIX: Explicitly command the player to move to the next video in the playlist
+      // CRITICAL FIX: Explicitly command the player to move to the next video when one ends.
+      // Because setLoop(true) is active, calling nextVideo() on the last track wraps back to the first track.
       if (event.data === YT.PlayerState.ENDED) {
          player.nextVideo();
       }

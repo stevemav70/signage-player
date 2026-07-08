@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Randomized YouTube Playlist</title>
+  
   <style>
     html, body {
       margin: 0;
@@ -46,7 +47,10 @@
           'fs': 0,
           'rel': 0,
           'modestbranding': 1,
-          'mute': 1,
+          
+          // CRITICAL FIX: Autoplaying muted video is rarely flagged as bot activity
+          'mute': 1,           
+          
           'listType': 'playlist',
           'list': playlistId,
           'origin': window.location.origin 
@@ -77,6 +81,10 @@
         isInitialized = true;
       }
       
+      // CRITICAL FIX: Explicitly command the player to move to the next video in the playlist
+      if (event.data === YT.PlayerState.ENDED) {
+         player.nextVideo();
+      }
     }
   </script>
 </body>

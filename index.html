@@ -65,7 +65,8 @@
         },
         events: {
           'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
+          'onStateChange': onPlayerStateChange,
+          'onError': onPlayerError // NEW: Add error listener
         }
       });
     }
@@ -95,6 +96,17 @@
       if (event.data === YT.PlayerState.ENDED) {
          player.nextVideo();
       }
+    }
+
+    // NEW: AUTO-SKIP FIX
+    // If a video is blocked from being embedded, skip it automatically!
+    function onPlayerError(event) {
+      // Error 101 or 150 = Embedding Disabled by owner. 
+      // Error 100 = Video Deleted/Private.
+      console.log("Skipping blocked video. Error code: " + event.data);
+      
+      // Tell the player to jump to the next track instantly
+      player.nextVideo();
     }
   </script>
 </body>

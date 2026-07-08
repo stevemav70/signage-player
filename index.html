@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Randomized YouTube Playlist</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000000;
+    }
+    iframe {
+      width: 100vw;
+      height: 100vh;
+      border: none;
+      pointer-events: none; 
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="player"></div>
+
+  <script>
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    var playlistId = 'PLa8eywZH4vzY';
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+          'autoplay': 1,
+          'controls': 0,
+          'disablekb': 1,
+          'fs': 0,
+          'rel': 0,
+          'modestbranding': 1,
+          'mute': 0,
+          'listType': 'playlist',
+          'list': playlistId,
+          'origin': window.location.origin 
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      var iframe = document.getElementById('player');
+      if(iframe) {
+        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      }
+    }
+
+    var isInitialized = false;
+
+    function onPlayerStateChange(event) {
+      if ((event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.PLAYING) && !isInitialized) {
+        player.setShuffle(true);
+        player.setLoop(true);
+        if (event.data === YT.PlayerState.CUED) {
+           player.playVideo();
+        }
+        isInitialized = true;
+      }
+      
+      if (event.data === YT.PlayerState.ENDED) {
+         player.playVideo();
+      }
+    }
+  </script>
+</body>
+</html>
